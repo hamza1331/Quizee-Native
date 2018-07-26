@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import { Text, View,StyleSheet } from 'react-native'
+import { Text, View,StyleSheet,Dimensions } from 'react-native'
 import { Button } from "react-native-elements";
 import { connect } from "react-redux";
 import { Constants } from 'expo';
-import { renderQuestionAction,incrementScoreAction } from "./store/actions/actions";
+import { renderQuestionAction,incrementScoreAction,endQuizAction,resetAction } from "./store/actions/actions";
 class Quiz extends Component {
   constructor(props){
     super(props)
@@ -16,7 +16,8 @@ class Quiz extends Component {
    }
    else
    console.log(false)
-   if(this.props.index===10){
+   if(this.props.index===this.props.QuizLength){
+     this.props.endQuiz()
     console.log('Final Score: ',this.props.score+1)
    }
    else
@@ -26,7 +27,7 @@ class Quiz extends Component {
   render() {
     return (
       <View style={styles.container}>
-       <View>
+      {!this.props.quizEnd && <View>
       <Text style={styles.paragraph}> Question#{this.props.index} </Text>
       <View style={styles.questionTextContainer}>
         <Text style={styles.questionText}>
@@ -46,7 +47,21 @@ class Quiz extends Component {
       </View>
         
       </View>
+      </View>}
+      {this.props.quizEnd && 
+      <View style={styles.scoreTextContainer} onTouchEnd={()=>{
+        this.props.reset()
+        setTimeout(() => {
+        this.props.history.push('/quizlist')
+        }, 200);
+      }}>
+      <Text style={styles.quizEndText}> ** Quiz ENDED **</Text>
+      <View style={styles.questionTextContainer}>
+        <Text style={styles.questionText}>
+          Your final score is {this.props.score} / {this.props.QuizLength}
+        </Text>
       </View>
+      </View>}
     </View>
     )
   }
@@ -57,7 +72,9 @@ function mapStateToProps(state){
       Question:state.rootReducer.Question,
       index:state.rootReducer.index,
       isLoggedIn:state.rootReducer.isLoggedIn,
-      score:state.rootReducer.score
+      score:state.rootReducer.score,
+      QuizLength:state.rootReducer.QuizLength,
+      quizEnd:state.rootReducer.quizEnd      
     })
 }
 
@@ -68,6 +85,12 @@ function mapActionToProps(dispatch) {
         },
         incrementScore:()=>{
           dispatch(incrementScoreAction())
+        },
+        endQuiz:()=>{
+          dispatch(endQuizAction())
+        },
+        reset:()=>{
+          dispatch(resetAction())
         }
     })
 }
@@ -83,9 +106,19 @@ const styles=StyleSheet.create({
   questionTextContainer:{
     marginTop:30
   },
+  scoreTextContainer:{
+    marginTop:Dimensions.get('screen').height*0.3
+  },
   questionText:{
     margin: 24,
     fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'black',
+  },
+  scoreText:{
+    margin: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     color: 'black',
@@ -97,6 +130,14 @@ const styles=StyleSheet.create({
     textAlign: 'center',
     color: 'black',
   },
+  quizEndText:{
+    margin: 24,
+    fontSize: 40,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'black',
+    fontStyle:'italic'
+  }
 })
 
 export default connect(mapStateToProps,mapActionToProps)(Quiz)

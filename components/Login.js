@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { StyleSheet, Text, View,TextInput,TouchableOpacity,Dimensions,Alert } from 'react-native';
+import { StyleSheet, Text, View,TextInput,Platform,TouchableOpacity,Dimensions,ActivityIndicator,KeyboardAvoidingView } from 'react-native';
 import { connect } from "react-redux";
 import firebase from 'firebase'
 import { LoginAction } from "./store/actions/actions";
@@ -9,7 +9,8 @@ class Login extends Component {
         super(props)
         this.state={
             email:'',
-            pw:''
+            pw:'',
+            loading:false
         }
         this.handleSubmission = this.handleSubmission.bind(this)
     }
@@ -27,9 +28,15 @@ class Login extends Component {
         }
     }
     handleSubmission(){
+        this.setState({
+            loading:true
+        })
         if(this.state.email&&this.state.pw){
             firebase.auth().signInWithEmailAndPassword(this.state.email,this.state.pw).then(()=>{
                 this.props.Login()
+                // this.setState({
+                //     loading:false
+                // })
                 this.props.history.push('/quizlist')
             }).catch(err=>{
                 alert(err)
@@ -41,7 +48,10 @@ class Login extends Component {
     }
   render() {
       return(
-            <View style={styles.container}>
+            <View
+            style={styles.container} >
+                   {!this.state.loading&&
+                <View>
                     <View style={styles.layoutStyles}>
     
                     </View>
@@ -60,8 +70,8 @@ class Login extends Component {
                         returnKeyType="next" 
                         placeholder='Email' 
                         placeholderTextColor='rgba(225,225,225,0.85)'/>
-    
-                     <TextInput style = {styles.input}   
+
+                    <TextInput style = {styles.input}   
                         returnKeyType="go" 
                         ref={(input)=> this.passwordInput = input} 
                         placeholder='Password' 
@@ -72,11 +82,16 @@ class Login extends Component {
                             })
                         }}
                         secureTextEntry/>
-    
-                     <TouchableOpacity style={styles.buttonContainer} 
+
+                    <TouchableOpacity style={styles.buttonContainer} 
                             onPress={this.handleSubmission}>
                         <Text  style={styles.buttonText}>LOGIN</Text>
                     </TouchableOpacity>
+                </View>
+                }
+             {this.state.loading&&<ActivityIndicator 
+             style={{marginTop:Dimensions.get('screen').height*0.4}} 
+             size="large" color="#0000ff" />}
           </View>
         )
     
@@ -86,13 +101,14 @@ class Login extends Component {
 const styles = StyleSheet.create({
     container: {
       padding: 20,
+      flex:0
      },
      input:{
          height: 50,
          backgroundColor: 'rgba(225,225,225,0.3)',
          marginBottom: 10,
          padding: 10,
-         color: 'black',
+         color: 'darkblue',
          fontSize:22,
          fontWeight:'bold',
          fontStyle:'italic'
@@ -109,12 +125,12 @@ const styles = StyleSheet.create({
          fontStyle:'italic'
      },
      layoutStyles:{
-        marginBottom:Dimensions.get('screen').height *0.25
+        marginBottom:Dimensions.get('screen').height *0.2
      },
      headingStyle:{
          fontSize:54,
          marginBottom:20,
-         color:'black',
+         color:'darkblue',
          textAlign:'center',
          fontWeight:'bold',
          textDecorationLine: 'underline',

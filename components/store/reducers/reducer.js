@@ -4,7 +4,9 @@ import {
     renderQuestion,
     putQuiz,
     startQuiz,
-    incrementScore
+    incrementScore,
+    endQuiz,
+    reset
  } from "../actions/actionNames";
 const initialState={
     isLoggedIn:true,
@@ -12,7 +14,9 @@ const initialState={
     Questions:[],
     Question:null,
     index:0,
-    score:0
+    score:0,
+    quizEnd:false,
+    QuizLength:0
 }
 
 export default (state = initialState,action)=>{
@@ -34,9 +38,20 @@ export default (state = initialState,action)=>{
         return Object.assign({},state,{
             Quizzes:[...state.Quizzes,action.payload]
         })
+        case endQuiz:
+        return Object.assign({},state,{
+            quizEnd:true
+        })
+        case reset:
+        return Object.assign({},state,{
+            index:0,
+            score:0,
+            quizEnd:false
+        })
         case startQuiz:
         return Object.assign({},state,{
-            Questions:state.Quizzes[action.payload].Questions
+            Questions:state.Quizzes[action.payload].Questions,
+            QuizLength:state.Quizzes[action.payload].Questions.length
         })
         case incrementScore:
         return Object.assign({},state,{

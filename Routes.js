@@ -10,8 +10,8 @@ class Routes extends React.Component {
     return (
       <NativeRouter >
         <View>
-            <Route  path='/login' component={Login}/>
-            <Route exact path='/' component={QuizList}/>
+            <Route exact path='/' component={Login}/>
+            <Route  path='/quizlist' component={QuizList}/>
             <Route  path='/quiz' component={Quiz}/>
         </View>
       </NativeRouter>

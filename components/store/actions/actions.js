@@ -4,8 +4,18 @@ import {
     renderQuestion,
     putQuiz,
     startQuiz,
-    incrementScore
+    incrementScore,
+    endQuiz,
+    reset
  } from "./actionNames";
+
+export function resetAction(){
+ return dispatch=>{
+     dispatch({
+         type:reset
+     })
+ }
+}
 
 export function startQuizAction(index){
     return dispatch=>{
@@ -14,6 +24,14 @@ export function startQuizAction(index){
             payload:index
         })
     }
+}
+
+export function endQuizAction(){
+    return dispatch=>[
+        dispatch({
+            type:endQuiz
+        })
+    ]
 }
 
 export function incrementScoreAction(){

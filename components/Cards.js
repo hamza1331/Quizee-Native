@@ -15,6 +15,7 @@ class Cards extends Component {
             <Button
             title='Start Quiz'
             onPress={()=>{
+                this.props.startQuizLoading()
                 this.props.startQuiz(this.props.quizIndex)
                 setTimeout(()=>{
                     this.props.retrieveQues()

@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import { View,StyleSheet,Dimensions,FlatList } from 'react-native'
+import { View,StyleSheet,Dimensions,FlatList,ActivityIndicator } from 'react-native'
 import { 
-    putQuizAction
+    putQuizAction,
+    LogoutAction
  } from "./store/actions/actions";
 import NavigationBar from 'react-native-navbar'
 import { connect } from "react-redux";
@@ -12,6 +13,12 @@ class QuizList extends Component {
         super(props)
         console.ignoredYellowBox=['Setting a timer']
         this.handleLogout = this.handleLogout.bind(this)
+        this.startQuizLoading = this.startQuizLoading.bind(this)
+        this.state={
+            quizzes:[],
+            isLoading:true,
+            loadingQuiz:false
+        }
     }
     componentWillMount(){
         if(!firebase.apps.length){
@@ -25,6 +32,7 @@ class QuizList extends Component {
             };
             firebase.initializeApp(config);
         }
+        if(!this.props.Quizzes.length){
         let firebaseRef = firebase.database().ref('quizzes')
         firebaseRef.once('value',(snap)=>{
             snap.forEach((Key)=>{
@@ -39,29 +47,42 @@ class QuizList extends Component {
             })
 
         }).catch(err=>console.log(err))
-    }
-    state={
-        quizzes:[],
-        isLoading:true
+        }
+        else
+        this.setState({
+            isLoading:false
+        })
     }
     handleLogout(){
         firebase.auth().signOut().then(()=>{
-            
-        })
+            this.props.Logout()
+            this.props.history.replace('/')
+        }).catch(err=>console.log(err))
+    }
+    startQuizLoading(){
+        if(this.props.index===0){
+            this.setState({
+                loadingQuiz:true
+            })
+        }
     }
   render() {
     return (
         this.props.isLoggedIn && 
         <View style={styles.container}>
-             <NavigationBar
+              {!this.state.loadingQuiz&&
+            <View>
+                <NavigationBar
               title={{title:'Quizzes',tintColor:'white'}}
               tintColor={'darkblue'}
               rightButton={{title: 'Logout',
               tintColor:'red',
-              handler: () => this.handleLogout
+              handler: () => this.handleLogout()
             }}
               />
-             
+             {this.state.isLoading&&<ActivityIndicator 
+             style={{marginTop:Dimensions.get('screen').height*0.4}} 
+             size="large" color="#0000ff" />}
              {!this.state.isLoading&& <FlatList
               data={this.props.Quizzes}
               renderItem={({item,index})=>{
@@ -70,6 +91,7 @@ class QuizList extends Component {
                     key={index.toString()} 
                     name={item.name} 
                     quizLength={item.Questions.length} 
+                    startQuizLoading = {this.startQuizLoading}
                     quizIndex={index} />)
               }}
               style={{marginBottom:45}}
@@ -77,7 +99,12 @@ class QuizList extends Component {
               >
               
               </FlatList>}
-              
+             
+            </View>
+            }
+             {this.state.loadingQuiz&&<ActivityIndicator 
+             style={{marginTop:Dimensions.get('screen').height*0.4}} 
+             size="large" color="#0000ff" />}
         </View>
         
     )
@@ -88,6 +115,7 @@ function mapStateToProps(state){
     return({
       isLoggedIn:state.rootReducer.isLoggedIn,
       Quizzes:state.rootReducer.Quizzes,
+      index:state.rootReducer.index
     })
 }
 
@@ -98,6 +126,9 @@ function mapActionToProps(dispatch) {
         // }
         putQuiz:(Quiz)=>{
             dispatch(putQuizAction(Quiz))
+        },
+        Logout:()=>{
+            dispatch(LogoutAction())
         }
     })
 }
